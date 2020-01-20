@@ -1,0 +1,7 @@
+[package]
+name = "batcall"
+version = "0.1.0"
+authors = ["wordi <wordijp@gmail.com>"]
+
+[dependencies]
+regex = "1"
