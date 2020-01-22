@@ -1,5 +1,3 @@
 /target
-**/*.rs.bk
 *.exe
-
 Cargo.lock

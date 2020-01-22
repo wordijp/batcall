@@ -1,7 +1,8 @@
 [package]
 name = "batcall"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["wordi <wordijp@gmail.com>"]
 
 [dependencies]
 regex = "1"
+encoding_rs = "0.8"
