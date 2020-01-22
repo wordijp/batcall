@@ -1,14 +1,40 @@
+# batcall
+
+Create a symbolic link for executing the bat file
+
+# What is it?
+
+At the command prompt, the bat file can be executed without an extension by defining the environment variable PATHEXE.
+
+```bat
+> SET PATHEXT
+PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH
+```
+
+But, on other systems, it will not be searched automatically.  
+This create exe file that runs bat to assist the system, As a symbolic link.
+
 # Usage
 
 ```cmd
-> make
-> copy batcall.exe hogebat.exe
+# find the command in the path
+> batcall --batcall-where-mklink target_command
+# the same 
+> cd C:/path/to/target_command_dir
+> mklink target_command.exe C:/path/to/batcall.exe
 ```
 
-and run
+And run.
 
-```shell
-> hogebat.exe
+```cmd
+> target_command
+# run target_command.bat
 ```
 
-Execute hogebat.bat same directory.
+# Dependency
+
+Depends on mklink installed
+
+# License
+
+MIT
