@@ -41,13 +41,24 @@ fn main() {
         process::exit(1);
     }
 
+    let mut bat_cmd: Option<String> = None;
+    if bat_cmd.is_none() {
+        bat_cmd = find_target(".bat");
+    }
+    if bat_cmd.is_none() {
+        bat_cmd = find_target(".cmd");
+    }
+    
+    if bat_cmd.is_none() {
+        eprintln!("{}.bat and {}.cmd is not found", bin, bin);
+        process::exit(1);
+    }
+
     // run
-    let re = Regex::new(r"\.[eE][xX][eE]$").unwrap();
-    let bat: String = (re.replace(&bin, "") + ".bat").to_string();
     let mut cmd: Child = Command::new("cmd")
         .arg("/c")
         .arg("call")
-        .arg(bat)
+        .arg(bat_cmd.unwrap())
         .args(args)
         .spawn()
         .unwrap();
@@ -59,6 +70,7 @@ fn main() {
 fn do_option(cmd: &String) -> i32 {
     let re_exe = Regex::new(r"\.[eE][xX][eE]$").unwrap();
     let re_bat = Regex::new(r"\.[bB][aA][tT]$").unwrap();
+    let re_cmd = Regex::new(r"\.[cC][mM][dD]$").unwrap();
 
     if re_exe.is_match(cmd) {
         eprintln!(".exe cannot be specified");
@@ -66,6 +78,10 @@ fn do_option(cmd: &String) -> i32 {
     }
     if re_bat.is_match(cmd) {
         eprintln!(".bat cannot be specified");
+        return 1;
+    }
+    if re_cmd.is_match(cmd) {
+        eprintln!(".cmd cannot be specified");
         return 1;
     }
 
@@ -80,6 +96,7 @@ fn do_option(cmd: &String) -> i32 {
     }
 
     let mut found_bat: Option<&str> = None;
+    let mut found_cmd: Option<&str> = None;
     let str = String::from_utf8(output.stdout).unwrap();
     let lines: Vec<&str> = str.as_str().split('\n').collect();
     for line in lines {
@@ -89,18 +106,21 @@ fn do_option(cmd: &String) -> i32 {
             return 1;
         }
 
-        if found_bat == None && re_bat.is_match(line) {
+        if found_bat.is_none() && re_bat.is_match(line) {
             found_bat = Some(line);
+        }
+        if found_cmd.is_none() && re_cmd.is_match(line) {
+            found_cmd = Some(line);
         }
     }
     
-    if found_bat == None {
-        eprintln!("{}.bat is not found", cmd);
+    if found_bat.is_none() && found_cmd.is_none() {
+        eprintln!("{}.bat and {}.cmd is not found", cmd, cmd);
         return 1;
     }
     
     // mklink exeute
-    let path = Path::new(found_bat.unwrap());
+    let path = Path::new(if found_bat.is_some() { found_bat.unwrap() } else { found_cmd.unwrap() });
     let bat_dir = path.parent().unwrap();
     env::set_current_dir(bat_dir).expect("failed: change bat file current dir");
     
@@ -114,6 +134,21 @@ fn do_option(cmd: &String) -> i32 {
     cmd.wait().unwrap();
 
     0
+}
+
+fn find_target(ext: &str) -> Option<String> {
+    let cwd = env::current_exe().unwrap();
+    let exe_path = Path::new(cwd.to_str().unwrap());
+    let exe_dir = exe_path.parent().unwrap().to_str().unwrap();
+    let exe_file = exe_path.file_name().unwrap().to_str().unwrap();
+    
+    let re = Regex::new(r"\.[eE][xX][eE]$").unwrap();
+    let cmd: String = (re.replace(exe_file, "") + ext.as_ref()).to_string();
+    if !Path::new(&format!("{}/{}", exe_dir, cmd)).exists() {
+        return None;
+    }
+
+    Some(cmd)
 }
 
 fn self_is_symlink() -> bool {

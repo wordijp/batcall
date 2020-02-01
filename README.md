@@ -1,6 +1,6 @@
 # batcall
 
-Create a symbolic link for executing the bat file
+Create a symbolic link for executing the bat or cmd file
 
 # What is it?
 
@@ -28,7 +28,7 @@ And run.
 
 ```cmd
 > target_command
-# run target_command.bat
+# run target_command.bat or target_command.cmd
 ```
 
 # Dependency
