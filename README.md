@@ -4,7 +4,7 @@ Create a symbolic link for executing the bat or cmd file
 
 # What is it?
 
-At the command prompt, the bat file can be executed without an extension by defining the environment variable PATHEXE.
+At the command prompt, the bat or cmd file can be executed without an extension by defining the environment variable PATHEXE.
 
 ```bat
 > SET PATHEXT
