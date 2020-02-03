@@ -9,6 +9,7 @@ extern crate encoding_rs;
 use encoding_rs::SHIFT_JIS;
 
 const OPTION_WHERE_MKLINK: &str = "--batcall-where-mklink";
+const PATHEXT: &str = "PATHEXT";
 
 #[macro_use]
 extern crate lazy_static;
@@ -41,6 +42,7 @@ fn main() {
         process::exit(status_code);
     }
     
+    
     if !self_is_symlink() {
         eprintln!("Cannot be run directly.");
         eprintln!("please create symlink");
@@ -50,20 +52,12 @@ fn main() {
         process::exit(1);
     }
 
-    let mut bat_cmd: Option<String> = None;
+    // run
+    let bat_cmd = find_bat_cmd();
     if bat_cmd.is_none() {
-        bat_cmd = find_target(".bat");
-    }
-    if bat_cmd.is_none() {
-        bat_cmd = find_target(".cmd");
-    }
-    
-    if bat_cmd.is_none() {
-        eprintln!("{}.bat and {}.cmd is not found", bin, bin);
+        eprintln!(".bat or .cmd file is not found in {} env", PATHEXT);
         process::exit(1);
     }
-
-    // run
     let mut cmd: Child = Command::new("cmd")
         .arg("/c")
         .arg("call")
@@ -140,6 +134,23 @@ fn do_option(cmd: &String) -> i32 {
     cmd.wait().unwrap();
 
     0
+}
+
+fn find_bat_cmd() -> Option<String> {
+    let pathext = env::var(PATHEXT).expect(&format!("{} env is not found", PATHEXT));
+    for ext in pathext.split(";") {
+        if RE_BAT.is_match(ext) {
+            if let Some(bat) = find_target(".bat") {
+                return Some(bat);
+            }
+        } else if RE_CMD.is_match(ext) {
+            if let Some(cmd) = find_target(".cmd") {
+                return Some(cmd);
+            }
+        }
+    }
+    
+    None
 }
 
 fn find_target(ext: &str) -> Option<String> {
