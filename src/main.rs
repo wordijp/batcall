@@ -10,6 +10,15 @@ use encoding_rs::SHIFT_JIS;
 
 const OPTION_WHERE_MKLINK: &str = "--batcall-where-mklink";
 
+#[macro_use]
+extern crate lazy_static;
+
+lazy_static! {
+    static ref RE_EXE: Regex = Regex::new(r"\.[eE][xX][eE]$").unwrap();
+    static ref RE_BAT: Regex = Regex::new(r"\.[bB][aA][tT]$").unwrap();
+    static ref RE_CMD: Regex = Regex::new(r"\.[cC][mM][dD]$").unwrap();
+}
+
 fn main() {
     let mut _args = env::args();
     // get bat & args
@@ -68,19 +77,16 @@ fn main() {
 }
 
 fn do_option(cmd: &String) -> i32 {
-    let re_exe = Regex::new(r"\.[eE][xX][eE]$").unwrap();
-    let re_bat = Regex::new(r"\.[bB][aA][tT]$").unwrap();
-    let re_cmd = Regex::new(r"\.[cC][mM][dD]$").unwrap();
 
-    if re_exe.is_match(cmd) {
+    if RE_EXE.is_match(cmd) {
         eprintln!(".exe cannot be specified");
         return 1;
     }
-    if re_bat.is_match(cmd) {
+    if RE_BAT.is_match(cmd) {
         eprintln!(".bat cannot be specified");
         return 1;
     }
-    if re_cmd.is_match(cmd) {
+    if RE_CMD.is_match(cmd) {
         eprintln!(".cmd cannot be specified");
         return 1;
     }
@@ -101,15 +107,15 @@ fn do_option(cmd: &String) -> i32 {
     let lines: Vec<&str> = str.as_str().split('\n').collect();
     for line in lines {
         let line = line.trim();
-        if re_exe.is_match(line) {
+        if RE_EXE.is_match(line) {
             eprintln!("{}.exe is already exists: {}", cmd, line);
             return 1;
         }
 
-        if found_bat.is_none() && re_bat.is_match(line) {
+        if found_bat.is_none() && RE_BAT.is_match(line) {
             found_bat = Some(line);
         }
-        if found_cmd.is_none() && re_cmd.is_match(line) {
+        if found_cmd.is_none() && RE_CMD.is_match(line) {
             found_cmd = Some(line);
         }
     }
@@ -142,8 +148,7 @@ fn find_target(ext: &str) -> Option<String> {
     let exe_dir = exe_path.parent().unwrap().to_str().unwrap();
     let exe_file = exe_path.file_name().unwrap().to_str().unwrap();
     
-    let re = Regex::new(r"\.[eE][xX][eE]$").unwrap();
-    let cmd: String = (re.replace(exe_file, "") + ext.as_ref()).to_string();
+    let cmd: String = (RE_EXE.replace(exe_file, "") + ext.as_ref()).to_string();
     if !Path::new(&format!("{}/{}", exe_dir, cmd)).exists() {
         return None;
     }
