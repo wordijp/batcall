@@ -25,7 +25,7 @@ fn main() {
     // get bat & args
     let bin: String = _args.nth(0).unwrap();
     let args: Vec<String> = _args.collect();
-    
+
     if args.len() >= 1 && args[0] == OPTION_WHERE_MKLINK {
         if args.len() != 2 {
             eprintln!("usage) {} {} <target>", bin, OPTION_WHERE_MKLINK);
@@ -41,8 +41,7 @@ fn main() {
         let status_code = do_option(&args[1]);
         process::exit(status_code);
     }
-    
-    
+
     if !self_is_symlink() {
         eprintln!("Cannot be run directly.");
         eprintln!("please create symlink");
@@ -71,7 +70,6 @@ fn main() {
 }
 
 fn do_option(cmd: &String) -> i32 {
-
     if RE_EXE.is_match(cmd) {
         eprintln!(".exe cannot be specified");
         return 1;
@@ -113,17 +111,17 @@ fn do_option(cmd: &String) -> i32 {
             found_cmd = Some(line);
         }
     }
-    
+
     if found_bat.is_none() && found_cmd.is_none() {
         eprintln!("{}.bat and {}.cmd is not found", cmd, cmd);
         return 1;
     }
-    
+
     // mklink exeute
     let path = Path::new(if found_bat.is_some() { found_bat.unwrap() } else { found_cmd.unwrap() });
     let bat_dir = path.parent().unwrap();
     env::set_current_dir(bat_dir).expect("failed: change bat file current dir");
-    
+
     let mut cmd: Child = Command::new("cmd")
         .arg("/c")
         .arg("mklink")
@@ -149,7 +147,7 @@ fn find_bat_cmd() -> Option<String> {
             }
         }
     }
-    
+
     None
 }
 
@@ -158,7 +156,7 @@ fn find_target(ext: &str) -> Option<String> {
     let exe_path = Path::new(cwd.to_str().unwrap());
     let exe_dir = exe_path.parent().unwrap().to_str().unwrap();
     let exe_file = exe_path.file_name().unwrap().to_str().unwrap();
-    
+
     let cmd: String = (RE_EXE.replace(exe_file, "") + ext.as_ref()).to_string();
     if !Path::new(&format!("{}/{}", exe_dir, cmd)).exists() {
         return None;
