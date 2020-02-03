@@ -12,12 +12,12 @@ PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH
 ```
 
 But, on other systems, it will not be searched automatically.  
-This create exe file that runs bat to assist the system, As a symbolic link.
+This create exe file that runs bat or cmd to assist the system, As a symbolic link.
 
 # Usage
 
 ```cmd
-# find the command in the path
+# create symbolic link in the same directory as target command
 > batcall --batcall-where-mklink target_command
 # the same 
 > cd C:/path/to/target_command_dir
